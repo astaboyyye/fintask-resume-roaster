@@ -2,6 +2,10 @@
 
 A simple Finlatics Project 2 app. Upload a text-based PDF resume and get a score, a lighthearted roast, and practical fixes on the same page. There is no sign-in, database, or saved history.
 
+## Live preview
+
+[Open the GitHub Pages version](https://astaboyyye.github.io/fintask-resume-roaster/). It reads the PDF in your browser and gives quick local feedback. AI-written feedback through Groq requires the Next.js server and is available when running the app locally with a configured key.
+
 ## Preview
 
 The feedback screenshot uses a synthetic sample resume.
