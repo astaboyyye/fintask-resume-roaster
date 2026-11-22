@@ -1,16 +1,13 @@
 import { NextResponse } from 'next/server';
-import { Prisma } from '@prisma/client';
-import { auth } from '@/lib/auth';
 import { generateRoast, LlmError } from '@/lib/llm';
+import { generateLocalRoast } from '@/lib/local-roast';
 import { extractResumeText } from '@/lib/pdf';
 import { PdfValidationError, validatePdfMetadata } from '@/lib/pdf-validation';
-import { prisma } from '@/lib/prisma';
-import { consumeRoastQuota } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-type ErrorCode = 'UNAUTHORIZED' | 'INVALID_FILE' | 'RATE_LIMITED' | 'AI_UNAVAILABLE' | 'SERVER_ERROR';
+type ErrorCode = 'INVALID_FILE' | 'AI_UNAVAILABLE' | 'SERVER_ERROR';
 type ErrorResponse = { error: { code: ErrorCode; message: string } };
 
 function errorResponse(code: ErrorCode, message: string, status: number) {
@@ -19,9 +16,6 @@ function errorResponse(code: ErrorCode, message: string, status: number) {
 
 export async function POST(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) return errorResponse('UNAUTHORIZED', 'Please sign in to roast a resume.', 401);
-
     let form: FormData;
     try {
       form = await request.formData();
@@ -36,21 +30,9 @@ export async function POST(request: Request) {
     const bytes = new Uint8Array(await file.arrayBuffer());
     const resumeText = await extractResumeText(bytes);
 
-    const allowed = await consumeRoastQuota(session.user.id);
-    if (!allowed) return errorResponse('RATE_LIMITED', 'You have used your five roasts for this hour. Please try again later.', 429);
-
-    const result = await generateRoast(resumeText);
-    const roast = await prisma.roast.create({
-      data: {
-        userId: session.user.id,
-        fileName: file.name.replace(/[\\/\u0000-\u001f]/g, '_').slice(0, 255),
-        resumeText,
-        resultJson: result as Prisma.InputJsonValue,
-        score: result.overall_score,
-      },
-      select: { id: true },
-    });
-    return NextResponse.json({ id: roast.id }, { status: 201 });
+    const aiEnabled = Boolean(process.env.GROQ_API_KEY);
+    const result = aiEnabled ? await generateRoast(resumeText) : generateLocalRoast(resumeText);
+    return NextResponse.json({ result, mode: aiEnabled ? 'ai' : 'local' }, { status: 200 });
   } catch (error) {
     if (error instanceof PdfValidationError) return errorResponse('INVALID_FILE', error.message, error.status);
     if (error instanceof LlmError) return errorResponse('AI_UNAVAILABLE', error.message, 502);
