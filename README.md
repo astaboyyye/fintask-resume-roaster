@@ -2,6 +2,14 @@
 
 A simple Finlatics Project 2 app. Upload a text-based PDF resume and get a score, a lighthearted roast, and practical fixes on the same page. There is no sign-in, database, or saved history.
 
+## Preview
+
+The feedback screenshot uses a synthetic sample resume.
+
+![Resume upload screen](docs/preview/upload.png)
+
+![Sample feedback screen](docs/preview/feedback.png)
+
 ## Run locally
 
 ```bash
