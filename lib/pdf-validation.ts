@@ -1,4 +1,5 @@
-export const MAX_PDF_BYTES = 5 * 1024 * 1024;
+// 4 MB keeps uploads under Vercel's 4.5 MB request body limit, including multipart overhead.
+export const MAX_PDF_BYTES = 4 * 1024 * 1024;
 
 export class PdfValidationError extends Error {
   constructor(message: string, public readonly status: 413 | 415 | 422 = 422) {
@@ -14,7 +15,7 @@ export function validatePdfMetadata(file: Pick<File, 'size' | 'type' | 'name'>):
     throw new PdfValidationError('This PDF is empty. Choose a resume with readable text.');
   }
   if (file.size > MAX_PDF_BYTES) {
-    throw new PdfValidationError('Your PDF must be 5 MB or smaller.', 413);
+    throw new PdfValidationError('Your PDF must be 4 MB or smaller.', 413);
   }
   if (!file.name.toLowerCase().endsWith('.pdf')) {
     throw new PdfValidationError('The file name must end in .pdf.', 415);
