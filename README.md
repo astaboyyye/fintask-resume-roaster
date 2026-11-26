@@ -1,5 +1,7 @@
 # AI Resume Roaster
 
+**Live app:** https://fintask-resume-roaster.vercel.app
+
 A full-stack Finlatics Project 2 app. Sign in with GitHub (or Google), upload a text-based PDF resume, and get a witty but useful review from Claude: an overall score, per-section scores with a roast and a fix for each, strengths, weaknesses, cringe phrases, and action items. Every roast is saved privately to your account so you can revisit or delete it later.
 
 ## Features
