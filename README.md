@@ -9,7 +9,7 @@ A full-stack Finlatics Project 2 app. Sign in with GitHub (or Google), upload a 
 | Requirement | How it is implemented |
 | --- | --- |
 | PDF upload | Drag-and-drop or file picker (`components/upload-dropzone.tsx`). The browser and server both check type, extension, size (4 MB), and the `%PDF-` signature. |
-| PDF text extraction | `pdf-parse` on the server (`lib/pdf.ts`). Scanned or image-only PDFs, near-empty files, and documents over 20,000 characters are rejected with a clear message instead of being silently cut off. |
+| PDF text extraction | `unpdf` (a serverless build of PDF.js) on the server (`lib/pdf.ts`). Scanned or image-only PDFs, near-empty files, and documents over 10 pages or 20,000 characters are rejected with a clear message instead of being silently cut off. |
 | Claude API integration | `lib/llm.ts` calls Claude (`claude-opus-5-5`) through the official `@anthropic-ai/sdk` with structured outputs, so the response always matches the Zod schema in `lib/roast-schema.ts`. Refusals, truncation, rate limits, and API errors map to friendly messages. |
 | User authentication | NextAuth.js with GitHub and optional Google OAuth (`lib/auth.ts`). `POST /api/roast` returns `401` without a session. Middleware redirects signed-out visitors away from `/history` and `/roast/*`. |
 | Database persistence | Supabase Postgres (`supabase/migrations/`, `lib/db.ts`): `users`, `roasts` (user id, file name, extracted text, result JSON, score, created at), and `roast_attempts`. Users can list, open, and delete their own roasts. Every query is filtered by the signed-in user's id. |
